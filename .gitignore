@@ -1,0 +1,7 @@
+ranger/plugins/ranger_devicons/
+.vim/bundle
+.vim/autoload
+.vim/plugged
+.vim/.netrwhist
+
+

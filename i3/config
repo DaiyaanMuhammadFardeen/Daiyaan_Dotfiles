@@ -1,0 +1,369 @@
+# vim:fileencoding=utf-8:foldmethod=marker:ft=i3config
+#
+#     ,e,  _-~88e        e88~~\
+#      "      888b      d888       /~~~8e  888-~88e   d88~\
+#     888   __888" ____ 8888 __        88b 888  888b C888
+#     888     888e      8888   |  e88~-888 888  8888  Y88b
+#     888     888P      Y888   | C888  888 888  888P   888D
+#     888  ~-_88"        "88__/   "88_-888 888-_88"  \_88P
+#                                          888
+#
+# Git ---> https://github.com/DaiyaanMuhammad/Daiyaan_Dotfiles
+# Please see https://i3wm.org/docs/userguide.html for a complete reference!
+
+#Keybindings {{{1
+#Window Specific {{{2
+# Setting the mod key
+	set $mod Mod4
+
+# Floating modifier
+		floating_modifier $mod
+
+# Closing Windows
+		bindsym $mod+q kill
+
+# Using mouse to close
+		bindsym --whole-window $mod+button2 kill
+
+		bindsym $mod+h focus left
+		bindsym $mod+j focus down
+		bindsym $mod+k focus up
+		bindsym $mod+l focus right
+
+# Arrow keys to switch between windows
+		bindsym $mod+Down focus down
+		bindsym $mod+Left focus left
+		bindsym $mod+Up focus up
+		bindsym $mod+Right focus right
+
+# Vim motion keys to move windows
+		bindsym $mod+Shift+h move left
+		bindsym $mod+Shift+j move down
+		bindsym $mod+Shift+k move up
+		bindsym $mod+Shift+l move right
+
+# Arrow keys to move windows
+		bindsym $mod+Shift+Left move left
+		bindsym $mod+Shift+Down move down
+		bindsym $mod+Shift+Up move up
+		bindsym $mod+Shift+Right move right
+
+# Place a window on the right side of the window
+		bindsym $mod+semicolon split h
+
+# Place a window down of the window
+		bindsym $mod+v split v
+
+# Make a window fullscreen
+		bindsym $mod+f fullscreen toggle
+
+# Focus the whole parent window which includes the childs as well
+		bindsym $mod+a focus parent
+
+# Toogle tiling mode
+		bindsym $mod+e layout toggle split
+
+# Toggle tabbed mode
+		bindsym $mod+w layout tabbed
+
+# Toogle stacked mode
+		bindsym $mod+s layout stacking
+
+# Make a window floating
+		bindsym $mod+shift+f floating toggle
+
+# Focus a floating window
+		bindsym $mod+space focus mode_toggle
+
+# Toggle resize mod. See "Appearance"
+		bindsym $mod+d mode "Resize " exec notify-send "You are in 'Resize' mode"
+# }}}2
+# Misc Key Bindings {{{2
+# Reload and restart the config file or the i3-wm itself
+	bindsym $mod+Shift+c reload
+		bindsym $mod+Shift+r restart
+
+# This part is for the media keys
+		set $refresh_i3status killall -SIGUSR1 i3status
+		bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +4% && $refresh_i3status
+		bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -4% && $refresh_i3status
+		bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
+		bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+# }}}2
+# Workspace Related keybindings and settings {{{2
+
+# ⡇⢸ ⡎⢱ ⣏⡱ ⣇⠜    ⢎⡑ ⣏⡱ ⣎⣱ ⡎⠑ ⣏⡉ ⢎⡑
+# ⠟⠻ ⠣⠜ ⠇⠱ ⠇⠱ ⠉⠉ ⠢⠜ ⠇  ⠇⠸ ⠣⠔ ⠧⠤ ⠢⠜
+#
+
+# Declaring workspaces as i3 variables
+	set $ws1 "1"
+		set $ws2 "2"
+		set $ws3 "3"
+		set $ws4 "4"
+		set $ws5 "5"
+		set $ws6 "6"
+		set $ws7 "7"
+		set $ws8 "8"
+		set $ws9 "9"
+		set $ws10 "10"
+
+# Assigning a specific window to a specific workspace
+# assign [class = "Alacritty"] $ws1
+# assign [class = "kitty"] $ws1
+		assign [class = "firefox"] $ws2
+#		assign [class = "Chromium"] $ws2
+		assign [class = "Brave-browser"] $ws2
+		assign [class = "TelegramDesktop"] $ws3
+		assign [class = "discord"] $ws3
+		assign [class = "okular"] $ws4
+		assign [class = "kdeconnect.app"] $ws5
+		assign [class = "Inkscape"] $ws4
+
+# Binding the whole number row to workspaces
+		bindsym $mod+1 workspace number $ws1
+		bindsym $mod+2 workspace number $ws2
+		bindsym $mod+3 workspace number $ws3
+		bindsym $mod+4 workspace number $ws4
+		bindsym $mod+5 workspace number $ws5
+		bindsym $mod+6 workspace number $ws6
+		bindsym $mod+7 workspace number $ws7
+		bindsym $mod+8 workspace number $ws8
+		bindsym $mod+9 workspace number $ws9
+		bindsym $mod+0 workspace number $ws10
+
+# Moving a window to a certain workspace
+		bindsym $mod+Shift+1 move container to workspace number $ws1
+		bindsym $mod+Shift+2 move container to workspace number $ws2
+		bindsym $mod+Shift+3 move container to workspace number $ws3
+		bindsym $mod+Shift+4 move container to workspace number $ws4
+		bindsym $mod+Shift+5 move container to workspace number $ws5
+		bindsym $mod+Shift+6 move container to workspace number $ws6
+		bindsym $mod+Shift+7 move container to workspace number $ws7
+		bindsym $mod+Shift+8 move container to workspace number $ws8
+		bindsym $mod+Shift+9 move container to workspace number $ws9
+		bindsym $mod+Shift+0 move container to workspace number $ws10
+
+# Alt-Tab replacement
+		bindsym $mod+Tab workspace next
+
+# Win+Shift+Tab to go in reverse
+		bindsym $mod+Shift+Tab workspace prev
+
+# Alt-Tabbing but with arrow keys and control key
+		bindsym $mod+Control+Right workspace next
+		bindsym $mod+Control+Left workspace prev
+# Win+Control+l and h to do the same thing
+		bindsym $mod+o workspace next
+		bindsym $mod+y workspace prev
+# }}}2
+# }}}1
+
+# Key Binded Applications {{{1
+# Launch The main terminal
+	bindsym $mod+Return exec kitty
+
+# Launch the secondary terminal
+		bindsym $mod+shift+Return exec alacritty
+
+# Lock the screen. This is a i3lock replacement
+		bindsym $mod+shift+x exec i3lock-fancy
+
+# Screenshot tool/utility
+		bindsym --release Print exec --no-startup-id import /tmp/screenshot.png && xclip -selection clipboard -t image/png -i /tmp/screenshot.png &
+
+# Screenshot, but with a bit more utilites
+		bindsym Shift+Print exec --no-startup-id spectacle
+
+# An internet browser.
+		bindsym $mod+b exec vivaldi-stable
+
+# A File manager
+		bindsym $mod+Home exec thunar
+
+# The Ranger command line File Manager. See polybar/DateAndTimeByDaiyaan for more explanation
+		bindsym $mod+End exec kitty ranger
+
+# A random wallpaper from the wallpapers directory on keypresses. (My favourite)
+#		exec_always nitrogen --random ~/Repositories/Daiyaan_Dotfiles/Wallpapers/ --set-scaled
+#		bindsym $mod+Shift+w exec nitrogen --random ~/Repositories/Daiyaan_Dotfiles/Wallpapers/ --set-scaled
+
+		exec_always bash ~/Repositories/Daiyaan_Dotfiles/i3/wallpaper.sh
+		bindsym $mod+Shift+w exec bash ~/Repositories/Daiyaan_Dotfiles/i3/wallpaper.sh
+
+# A run menu. It is drun. So you can directy feed it terminal commands just like you would in a terminal
+		bindsym $mod+r exec --no-startup-id rofi -show drun -font  "Roboto 22" -show-icons --lines 0 -eh 1 -width 100 -padding 1000 -run-shell-command '{terminal} -e zsh -ic "{cmd} && read"'
+
+# How can this be complete without an emoji picker!
+		bindsym $mod+Insert exec rofimoji --action copy
+
+# Dmenu Script to select a config and edit it. (Inspired from DT)
+		bindsym $mod+p exec --no-startup-id bash ~/.config/i3/edit_config.sh
+
+# Dmenu Script to handle power options
+		bindsym $mod+Shift+e exec --no-startup-id bash ~/.config/i3/shutdown.sh
+
+# System wallpaper change with key press
+		bindsym $mod+m exec --no-startup-id sh ~/.config/i3/wallpaper.sh
+
+# Dunst Action with keybindings
+		bindsym Mod1+space exec dunstctl action
+		bindsym Mod1+x exec dunstctl close
+# }}}1
+
+# Mode Functions {{{1
+# Resize
+	mode "Resize " {
+		bindsym h resize shrink width 1 px or 1 ppt
+			bindsym j resize grow height 1 px or 1 ppt
+			bindsym k resize shrink height 1 px or 1 ppt
+			bindsym l resize grow width 1 px or 1 ppt
+
+			bindsym Left resize shrink width 1 px or 1 ppt
+			bindsym Down resize grow height 1 px or 1 ppt
+			bindsym Up resize shrink height 1 px or 1 ppt
+			bindsym Right resize grow width 1 px or 1 ppt
+
+			bindsym Return mode "default"
+			bindsym Escape mode "default"
+			bindsym q mode "default"
+			bindsym $mod+d mode "default"
+			bindsym $mod+g mode ""
+
+			bindsym Shift+h resize shrink width 10 px or 10 ppt
+			bindsym Shift+j resize grow height 10 px or 10 ppt
+			bindsym Shift+k resize shrink height 10 px or 10 ppt
+			bindsym Shift+l resize grow width 10 px or 10 ppt
+
+			bindsym Shift+Down resize grow height 10 px or 10 ppt
+			bindsym Shift+Up resize shrink height 10 px or 10 ppt
+			bindsym Shift+Right resize grow width 10 px or 10 ppt
+			bindsym Shift+Left resize shrink width 10 px or 10 ppt
+	}
+
+# Gaps
+	mode "Gaps " {
+		bindsym Right gaps inner current plus 2
+			bindsym Left gaps inner current minus 2
+			bindsym Down gaps inner all set 16
+			bindsym Up gaps inner all set 0
+			bindsym Return mode "default"
+			bindsym Escape mode "default"
+			bindsym $mod+g mode "default"
+			bindsym $mod+d mode ""
+	}
+	bindsym $mod+g mode "Gaps "
+# }}}1
+
+# Appearance, colors, gaps, borders and window rules {{{
+# A font for the window borders
+	font pango:JetBrainsMono Nerd Font 11
+# Setting the Color Variables. They should be pretty self-explanatory
+
+		set $color0   #282c34
+		set $color8   #5C6370
+		set $color1   #E06C75
+		set $color9   #E06C75
+		set $color2   #98C379
+		set $color10  #98C379
+		set $color3	  #e5c07b
+		set $color11  #e5c07b
+		set $color4   #61AFEF
+		set $color12  #61AFEF
+		set $color5   #C678DD
+		set $color13  #C678DD
+		set $color6   #56B6C2
+		set $color14  #56B6C2
+		set $color7   #ABB2BF
+		set $color15  #FFFFFF
+		set $bg-color 	         #98c379
+		set $inactive-bg-color   #282c34
+		set $text-color          #282c34
+		set $inactive-text-color #abb2bf
+		set $urgent-bg-color     #ffaf00
+
+# window colors
+
+#					            border              background         text                 indicator
+		client.focused          $color0        		$color2          	$color0          	$bg-color
+		client.unfocused        $color0  			$color0 			$color7 			#001b2b34
+		client.focused_inactive $color0  			$color2 			$color0 			#001b2b34
+		client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color          #001b2b34
+
+# Disabling the tiling edge borders
+# hide_edge_borders both
+
+# I3-gaps
+		gaps inner 0
+		gaps outer 0
+
+# Having a frame on the active window
+		for_window [class="^.*"] border pixel 0
+		default_orientation vertical
+		for_window [class="^.*"] split toggle
+		for_window [floating] border pixel 2
+		for_window [tiling] border pixel 0
+		default_border pixel 0
+
+# Some windows are better off left floating. Append rules for if you want any winows to float by default
+		for_window [class="Pavucontrol"] floating enable
+		for_window [class="Gpick"] floating enable
+		for_window [class="Config"] floating enable
+		for_window [class="kdeconnect.app"] floating enable
+		for_window [class="Alacritty"] floating enable
+
+		for_window [class="Alacritty"] resize set 600 500
+		for_window [class="Alacritty"] move position 1315 575
+
+# Some applications are better fullscreen
+		for_window [class="mpv"] fullscreen enable
+		for_window [class="Sxiv"] fullscreen enable
+# }}}
+
+# I3-bar settings {{{
+# bar {
+# font pango:Exo2, FontAwesome5Free , FontAwesome5Brands , SymbolsNerdFont 11
+# status_command i3blocks -c ~/.config/i3blocks/config
+# colors {
+# background $bg-color
+# separator #757575
+# #                  border             background         text
+# focused_workspace  $bg-color          $bg-color          #00bcd4
+# inactive_workspace $bg-color 		  $bg-color 		 $inactive-text-color
+# urgent_workspace   $urgent-bg-color   $urgent-bg-color   $text-color
+# }
+# position top
+# #font pango:roboto 10
+# }
+# }}}
+
+# Autostart with i3 {{{
+
+# Redshift is a app to reduce the blue light coming from the screen
+#	exec redshift -O 4200 &
+
+# Polybar launch script
+	exec_always --no-startup-id $HOME/.config/polybar/launch.sh
+
+# A display compositing. (picom-jonaburg-git) It has blur, rounded corners, transitions, and many more. See more in picom
+#		exec sleep 2 && picom &
+
+# A beautiful preconfigured notification-center
+# exec deadd-notification-center &
+#		exec dunst &
+
+# Setting the key repeat and delay
+#		exec xset r rate 200 25
+
+# Pscirle for wallpaper
+#		exec_always bash $HOME/.config/i3/wallpaper.sh
+
+# Network manager applet
+		exec --no-startup-id nm-applet
+
+# Running ibus for avro
+#		exec ibus-daemon -d
+		exec_always xset r rate 200 30
+		exec picom
+		exec_always setxkbmap -option caps:escape
+# }}}

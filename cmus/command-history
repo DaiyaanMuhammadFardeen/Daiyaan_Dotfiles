@@ -1,0 +1,17 @@
+add ~/Music/
+add Music/
+q
+colorscheme gruvbox-alt
+colorscheme green
+colorscheme gray-88
+colorscheme dracula
+colorscheme default
+colorscheme cyan
+colorscheme amazon
+colorscheme
+set color_titleline_bg=blue
+set color_titleline_bg=yellow
+set color_titleline_bg=green
+player-play
+Browser
+h
