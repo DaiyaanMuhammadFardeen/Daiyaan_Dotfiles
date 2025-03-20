@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:export-filename="/home/daiyaan/.config/dunst/clipart343879.png"
+   inkscape:export-xdpi="24.817579"
+   inkscape:export-ydpi="24.817579"
+   inkscape:version="1.1 (c4e8f9ed74, 2021-05-24)"
+   sodipodi:docname="drawing.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1"
+     inkscape:cx="-2163.5"
+     inkscape:cy="-1655"
+     inkscape:window-width="1916"
+     inkscape:window-height="1054"
+     inkscape:window-x="0"
+     inkscape:window-y="22"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid879" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g1886"
+       transform="matrix(0.37297113,0,0,0.28045056,-646.08687,-498.05394)"
+       inkscape:export-filename="/home/daiyaan/.config/dunst/normal.png"
+       inkscape:export-xdpi="25.394054"
+       inkscape:export-ydpi="25.394054"
+       style="fill:#1e1e1e;fill-opacity:1;opacity:1;stroke:#dadada;stroke-opacity:1">
+      <path
+         style="fill:#1e1e1e;stroke:#dadada;stroke-width:44.6746;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1"
+         d="m 316.52683,115.88723 c -11.92884,-243.43326 -310.3852764,-246.03922 -313.7407912,0 -1.21268,88.9184 15.1241692,96.66437 -6.8204509,139.18599 -12.9197809,25.03438 -55.9005159,32.73648 -68.2045209,57.99416 -13.920394,28.57578 -25.721533,70.91968 0,92.79064 109.316526,92.9516 354.474223,92.9516 463.790743,0 22.50635,-19.1371 10.83532,-55.74437 0,-81.19182 -12.08951,-28.393 -55.42241,-41.42017 -68.20452,-69.59298 -19.65601,-43.32348 -6.82046,-139.18599 -6.82046,-139.18599 z"
+         id="path933"
+         sodipodi:nodetypes="sssssssss"
+         inkscape:export-filename="/home/daiyaan/.config/dunst/normal.png"
+         inkscape:export-xdpi="42.955898"
+         inkscape:export-ydpi="42.955898" />
+      <path
+         style="fill:#1e1e1e;stroke:#dadada;stroke-width:37.0862;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1"
+         d="m 105.08976,-53.455702 c 1.16716,-97.392078 106.75789,-96.416828 109.13028,0"
+         id="path1372"
+         sodipodi:nodetypes="cc"
+         inkscape:export-filename="/home/daiyaan/.config/dunst/normal.png"
+         inkscape:export-xdpi="42.955898"
+         inkscape:export-ydpi="42.955898" />
+      <path
+         style="fill:#1e1e1e;stroke:#dadada;stroke-width:40.5857;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1"
+         d="m 265.92678,475.45101 c -2.27318,97.39205 -207.922258,96.41679 -212.542763,0"
+         id="path3405"
+         sodipodi:nodetypes="cc"
+         inkscape:export-filename="/home/daiyaan/.config/dunst/normal.png"
+         inkscape:export-xdpi="42.955898"
+         inkscape:export-ydpi="42.955898" />
+    </g>
+  </g>
+</svg>
