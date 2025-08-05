@@ -38,14 +38,14 @@ Plugin 'https://github.com/morhetz/gruvbox.git'
 Plugin 'psliwka/vim-smoothie'
 Plugin 'ryanoasis/vim-devicons'
 Plugin 'tpope/vim-commentary'
-Plugin 'tomasiser/vim-code-dark'
+" Plugin 'tomasiser/vim-code-dark'
 " Plugin 'junegunn/fzf', { 'do': { -> fzf#install() } }
 " Plugin 'junegunn/fzf.vim'
 Plugin 'tpope/vim-fugitive'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'mbbill/undotree'
 Plugin 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-Plugin 'mattn/emmet-vim'
+" Plugin 'mattn/emmet-vim'
 call vundle#end()            " required
 filetype indent on
 filetype plugin indent on    " required}}}
