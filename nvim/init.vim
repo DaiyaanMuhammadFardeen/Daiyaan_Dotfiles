@@ -36,6 +36,7 @@ Plugin 'xolox/vim-misc'
 Plugin 'preservim/tagbar'
 Plugin 'https://github.com/morhetz/gruvbox.git'
 Plugin 'psliwka/vim-smoothie'
+Plugin 'https://github.com/Exafunction/windsurf.vim.git'
 Plugin 'ryanoasis/vim-devicons'
 Plugin 'tpope/vim-commentary'
 " Plugin 'tomasiser/vim-code-dark'
@@ -255,7 +256,7 @@ let g:EasyMotion_use_smartsign_us = 1
 "}}}
 
 " Vim-Tabnine plugin {{{
-set completeopt-=preview
+" set completeopt-=preview
 "}}}
 
 let g:goyo_width=100
@@ -264,8 +265,17 @@ let g:goyo_height=95
 let g:coc_global_extensions = [
 			\ 'coc-pairs',
 			\ 'coc-eslint',
-			\ 'coc-tabnine',
+			\ 'coc-yank',
+			\ 'coc-highlight',
+			\ 'coc-eslint',
+			\ 'coc-vimlsp',
 			\ 'coc-tsserver',
+			\ 'coc-sh',
+			\ 'coc-pyright',
+			\ 'coc-java',
+			\ 'coc-clangd',
+			\ 'coc-awk',
+			\ 'coc-marketplace',
 			\ 'coc-prettier',
 			\ ]
 

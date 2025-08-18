@@ -16,5 +16,22 @@
                 }
             }
         }
+    },
+    "highlight.enable": true,
+    "highlight.groups": {
+        "cocHighlightSemantic": {
+            "guifg": "NONE",
+            "guibg": "NONE",
+            "guisp": "NONE",
+            "gui": "underline",
+            "ctermfg": "NONE",
+            "ctermbg": "NONE",
+            "cterm": "underline"
+        }
+    }
+    {
+        "semanticTokens.enable": true,
+        "semanticTokens.filetypes": ["c", "cpp", "h", "hpp"], // Adjust file types as needed
+        "clangd.semanticHighlighting": true
     }
 }
