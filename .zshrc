@@ -10,6 +10,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 	source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+source /usr/share/zsh/share/antigen.zsh
 export EDITOR="nvim"
 export PYTHONSTARTUP="$HOME/Repositories/Daiyaan_Dotfiles/ipython.py"
 export PATH=/home/daiyaan/.local/bin/:$PATH
@@ -192,7 +193,7 @@ bindkey '^[[1;3D'      cdUndoKey
 # Plugins {{{
 # Antigen Installation ---> curl -L git.io/antigen > antigen.zsh
 # Antigen Plugins
-source ~/antigen.zsh
+
 antigen bundle "MichaelAquilina/zsh-auto-notify"
 antigen bundle hlissner/zsh-autopair
 antigen bundle zsh-users/zsh-autosuggestions
@@ -223,7 +224,7 @@ source ~/Repositories/Zsh-plugins/fast-syntax-highlighting/fast-syntax-highlight
 
 # Aliases {{{
 #alias ls='colorls -goAl --gs --sd '
-alias ls='lsd -FAlX1 --group-dirs first --date relative --blocks permission --blocks size --blocks date --blocks name'
+alias ls='lsd -FAlX1 --group-dirs first --date relative --git --blocks permission --blocks size --blocks date --blocks name'
 alias ll='lsd -FAl --total-size --group-dirs first --sort extension'
 alias tree='lsd --tree'
 alias c="clear"
@@ -251,5 +252,7 @@ bindkey -M vicmd v edit-command-line
 setopt EXTENDED_GLOB
 
 # cd ~/Projects
-setxkbmap -option caps:escape
-source /usr/share/nvm/init-nvm.sh
+# setxkbmap -option caps:escape
+# source /usr/share/nvm/init-nvm.sh
+export XKB_DEFAULT_OPTIONS=caps:escape
+export HSA_OVERRIDE_GFX_VERSION=10.3.0
