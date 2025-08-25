@@ -21,7 +21,7 @@ set rtp+=~/.vim/bundle/Vundle.vim
 "git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
-Plugin 'one-dark/onedark.nvim'
+Plugin 'navarasu/onedark.nvim'
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
 Plugin 'mboughaba/i3config.vim'
@@ -39,6 +39,7 @@ Plugin 'psliwka/vim-smoothie'
 Plugin 'https://github.com/Exafunction/windsurf.vim.git'
 Plugin 'ryanoasis/vim-devicons'
 Plugin 'tpope/vim-commentary'
+Plugin 'mattn/emmet-vim'
 " Plugin 'tomasiser/vim-code-dark'
 " Plugin 'junegunn/fzf', { 'do': { -> fzf#install() } }
 " Plugin 'junegunn/fzf.vim'
@@ -105,7 +106,27 @@ let g:onedark_darker_diagnostics = 1
 let g:onedark_diagnostics_undercurl = 1
 let g:onedark_italics = 1
 let g:codedark_italics = 1
+" Vim
+" Function to check KDE Plasma theme
+function! GetKDETheme()
+    " Use kreadconfig5 to get the current LookAndFeelPackage
+    let l:theme = system('kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage')
+    " Trim whitespace and newline from the output
+    let l:theme = substitute(l:theme, '\n\+$', '', '')
+    " Return 'dark' if the theme is breezedark, otherwise 'light'
+    if l:theme ==# 'org.kde.breezedark.desktop'
+        return 'dark'
+    else
+        return 'light'
+    endif
+endfunction
 
+" Set onedark theme based on KDE Plasma theme
+let g:onedark_config = {
+    \ 'style': GetKDETheme(),
+\}
+
+" Apply the colorscheme
 colorscheme onedark
 "}}}
 
