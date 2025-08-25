@@ -1,31 +1,19 @@
 #!/bin/bash
-# KDE Plasma Auto Theme Switcher
-# Requires: redshift or manual lat/long setup
 
-# Get your location (replace with your city coords if redshift not used)
-LAT="23.8103"   # Example: Dhaka
-LON="90.4125"
+# Script to toggle between light and dark KDE themes and update Kitty config
 
-# Get current time
-CURRENT=$(date +%s)
+# Get current LookAndFeelPackage
+current_theme=$(kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage)
 
-# Get sunrise/sunset from redshift (fallback: hardcode times)
-SUNRISE=$(redshift -l $LAT:$LON -p 2>/dev/null | grep "Solar elevation" -A1 | grep rise | awk '{print $2}')
-SUNSET=$(redshift -l $LAT:$LON -p 2>/dev/null | grep "Solar elevation" -A1 | grep set | awk '{print $2}')
-
-# Fallback if parsing fails: use static times
-[ -z "$SUNRISE" ] && SUNRISE=$(date -d "06:00" +%s)
-[ -z "$SUNSET" ] && SUNSET=$(date -d "18:00" +%s)
-
-# Convert sunrise/sunset to timestamps
-SUNRISE_TS=$(date -d "$SUNRISE" +%s)
-SUNSET_TS=$(date -d "$SUNSET" +%s)
-
-# Switch themes
-if [ "$CURRENT" -ge "$SUNRISE_TS" ] && [ "$CURRENT" -lt "$SUNSET_TS" ]; then
-    # Daytime → Breeze Light
-    lookandfeeltool -a org.kde.breezelight.desktop
+if [ "$current_theme" = "org.kde.breezedark.desktop" ]; then
+    # Switch to light theme
+    lookandfeeltool -a org.kde.breeze.desktop
+    cp ~/Repositories/Daiyaan_Dotfiles/kitty/light.kitty.conf ~/.config/kitty/kitty.conf
 else
-    # Nighttime → Breeze Dark
+    # Switch to dark theme
     lookandfeeltool -a org.kde.breezedark.desktop
+    cp ~/Repositories/Daiyaan_Dotfiles/kitty/dark.kitty.conf ~/.config/kitty/kitty.conf
 fi
+
+# Reload Kitty config (assuming single instance or it's okay to signal all)
+pkill -USR1 kitty
