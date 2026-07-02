@@ -1,4 +1,3 @@
-
 " vim:fileencoding=utf-8:foldmethod=marker
 
 "    .s    s.
@@ -31,12 +30,12 @@ Plugin 'NLKNguyen/papercolor-theme'
 Plugin 'easymotion/vim-easymotion'
 Plugin 'lilydjwg/colorizer'
 Plugin 'sonph/onehalf', { 'rtp': 'vim' }
-Plugin 'xolox/vim-easytags'
-Plugin 'xolox/vim-misc'
+" Plugin 'xolox/vim-easytags'
+" Plugin 'xolox/vim-misc'
 Plugin 'preservim/tagbar'
 Plugin 'https://github.com/morhetz/gruvbox.git'
 Plugin 'psliwka/vim-smoothie'
-Plugin 'https://github.com/Exafunction/windsurf.vim.git'
+" Plugin 'https://github.com/Exafunction/windsurf.vim.git'
 Plugin 'ryanoasis/vim-devicons'
 Plugin 'tpope/vim-commentary'
 Plugin 'mattn/emmet-vim'
@@ -59,9 +58,9 @@ set foldmethod=marker
 set encoding=utf-8
 set mouse=a
 filetype on
-autocmd BufEnter * lcd %:p:h "Sync the directory with the current file in buffer
-autocmd VimEnter * TSEnable highlight
-autocmd VimEnter * TSEnable indent
+" autocmd BufEnter * lcd %:p:h "Sync the directory with the current file in buffer
+" autocmd VimEnter * TSEnable highlight
+" autocmd VimEnter * TSEnable indent
 filetype plugin on
 set number
 set relativenumber
@@ -293,11 +292,9 @@ let g:coc_global_extensions = [
 			\ 'coc-tsserver',
 			\ 'coc-sh',
 			\ 'coc-pyright',
-			\ 'coc-java',
 			\ 'coc-clangd',
 			\ 'coc-awk',
 			\ 'coc-marketplace',
-			\ 'coc-prettier',
 			\ ]
 
 inoremap <expr> <Tab> pumvisible() ? "\<C-y>" : "\<Tab>"
@@ -329,7 +326,7 @@ let g:PaperColor_Theme_Options = {
 nmap <F5> :source ~/.config/nvim/init.vim <cr>
 map <F3> :noh<CR>
 let g:user_emmet_install_global = 0
-autocmd FileType html,css,php EmmetInstall
+" autocmd FileType html,css,php EmmetInstall
 set expandtab
 set tabstop=4
 set shiftwidth=4
