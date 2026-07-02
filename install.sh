@@ -94,6 +94,18 @@ cmd_exists() {
 #===============================================================================
 
 detect_distro() {
+    # --- macOS ---
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        DISTRO_ID="macos"
+        DISTRO_NAME="macOS"
+        DISTRO_FAMILY="macos"
+        PKG_MANAGER="brew"
+        log_info "Detected: ${DISTRO_NAME}"
+        log_info "Package manager: ${PKG_MANAGER}"
+        log_info "Distribution family: ${DISTRO_FAMILY}"
+        return
+    fi
+
     log_step "Detecting Linux distribution..."
 
     if [[ -f /etc/os-release ]]; then
@@ -133,6 +145,11 @@ detect_distro() {
             PKG_MANAGER="dnf"
             DISTRO_FAMILY="fedora"
             ;;
+        # Atomic/immutable Fedora variants — use brew for CLI tools
+        aurora|bluefin|silverblue|kinoite|sericea|onyx|vanilla|socra|fool)
+            PKG_MANAGER="brew"
+            DISTRO_FAMILY="immutable"
+            ;;
         opensuse*|suse)
             PKG_MANAGER="zypper"
             DISTRO_FAMILY="opensuse"
@@ -143,6 +160,7 @@ detect_distro() {
             elif cmd_exists apt;    then PKG_MANAGER="apt";    DISTRO_FAMILY="debian"
             elif cmd_exists dnf;    then PKG_MANAGER="dnf";    DISTRO_FAMILY="fedora"
             elif cmd_exists zypper; then PKG_MANAGER="zypper"; DISTRO_FAMILY="opensuse"
+            elif cmd_exists brew;   then PKG_MANAGER="brew";   DISTRO_FAMILY="brew"
             else
                 log_error "Could not detect package manager."
                 log_error "Please install packages manually."
@@ -166,6 +184,12 @@ install_packages() {
     if [[ "$PKG_MANAGER" == "unknown" ]]; then
         log_warn "No supported package manager detected. Skipping package installation."
         log_warn "Install the required packages manually (see the script for the list)."
+        return
+    fi
+
+    # --- Homebrew (macOS, Aurora, Bluefin, or fallback) ---
+    if [[ "$PKG_MANAGER" == "brew" ]]; then
+        install_brew_packages
         return
     fi
 
@@ -379,6 +403,99 @@ install_packages() {
             fi
             ;;
     esac
+    log_success "Package installation complete."
+}
+
+#===============================================================================
+# HOMEBREW PACKAGE INSTALLATION (macOS, Aurora, Bluefin)
+#===============================================================================
+
+install_brew_packages() {
+    log_header "Homebrew Package Installation"
+
+    # Ensure Homebrew is installed
+    if ! cmd_exists brew; then
+        log_step "Installing Homebrew..."
+        if [[ "$DRY_RUN" == false ]]; then
+            if cmd_exists curl; then
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 2>&1 | tail -5
+            elif cmd_exists wget; then
+                /bin/bash -c "$(wget -qO- https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 2>&1 | tail -5
+            else
+                log_error "Neither curl nor wget found. Cannot install Homebrew."
+                return 1
+            fi
+
+            # Add brew to PATH for this session
+            if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+                eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+            elif [[ -x /opt/homebrew/bin/brew ]]; then
+                eval "$(/opt/homebrew/bin/brew shellenv)"
+            fi
+
+            if cmd_exists brew; then
+                log_success "Homebrew installed."
+            else
+                log_error "Homebrew installation failed."
+                return 1
+            fi
+        else
+            log_info "  DRY-RUN: Would install Homebrew"
+        fi
+    else
+        log_success "Homebrew already installed."
+    fi
+
+    # --- Brew package lists ---
+    # Note: brew package names differ from system packages
+    local core_pkgs=(zsh git curl wget neovim python)
+    local shell_pkgs=(fzf)
+    local fm_pkgs=(ranger bat lsd)
+    local sys_pkgs=(htop tree)
+    local dev_pkgs=(node gh)
+
+    # Combine all packages
+    local all_pkgs=()
+    all_pkgs+=("${core_pkgs[@]}")
+    all_pkgs+=("${shell_pkgs[@]}")
+    all_pkgs+=("${fm_pkgs[@]}")
+    all_pkgs+=("${sys_pkgs[@]}")
+    all_pkgs+=("${dev_pkgs[@]}")
+
+    # Remove duplicates
+    local -A seen
+    local unique_pkgs=()
+    for pkg in "${all_pkgs[@]}"; do
+        if [[ -z "${seen[$pkg]:-}" ]]; then
+            unique_pkgs+=("$pkg")
+            seen[$pkg]=1
+        fi
+    done
+
+    log_info "Packages to install: ${unique_pkgs[*]}"
+
+    log_step "Installing packages with brew..."
+    if [[ "$DRY_RUN" == false ]]; then
+        brew install "${unique_pkgs[@]}" 2>&1 | tail -10 || log_warn "Some packages may not have installed correctly."
+    else
+        log_info "  DRY-RUN: Would run: brew install ${unique_pkgs[*]}"
+    fi
+
+    # On immutable Linux (Aurora/Bluefin), also layer WM/terminal packages via rpm-ostree
+    if [[ "$DISTRO_FAMILY" == "immutable" ]] && cmd_exists rpm-ostree; then
+        log_header "System Packages (rpm-ostree layering)"
+        log_info "Layering WM and terminal packages via rpm-ostree (requires reboot)..."
+
+        local system_pkgs=(i3-wm i3lock i3status rofi dunst picom polybar kitty alacritty zathura zathura-pdf-mupdf cmus)
+
+        if [[ "$DRY_RUN" == false ]]; then
+            sudo rpm-ostree install --apply-live "${system_pkgs[@]}" 2>&1 | tail -10 || log_warn "Some system packages may not have installed correctly."
+            log_info "A reboot may be required for all changes to take effect."
+        else
+            log_info "  DRY-RUN: Would run: sudo rpm-ostree install --apply-live ${system_pkgs[*]}"
+        fi
+    fi
+
     log_success "Package installation complete."
 }
 
