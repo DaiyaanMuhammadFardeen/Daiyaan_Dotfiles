@@ -1105,25 +1105,32 @@ ZSHRC_EOF
 #===============================================================================
 
 install_zsh_plugins() {
-    log_header "Zsh Plugins (~/Repositories/Zsh-plugins/)"
+    log_header "Zsh Plugins (Oh My Zsh custom plugins)"
 
-    local plugins_dir="$HOME/Repositories/Zsh-plugins"
+    local custom_plugins_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins"
 
     if [[ "$DRY_RUN" == false ]]; then
-        mkdir -p "$plugins_dir"
+        mkdir -p "$custom_plugins_dir"
     fi
 
-    # Define plugins: name → git URL
+    # Define custom plugins: name → git URL
+    # Built-in Oh My Zsh plugins (git, colored-man-pages, sudo) don't need cloning.
+    # Plugins already cloned by install_oh_my_zsh(): zsh-autosuggestions,
+    # zsh-completions, zsh-you-should-use, fzf-tab — skipped if present.
     declare -A zsh_plugins=(
         ["fast-syntax-highlighting"]="https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
-        ["git"]="https://github.com/davidde/git.git"
-        ["zsh-bash-completions-fallback"]="https://github.com/3v1n0/zsh-bash-completions-fallback.git"
         ["zsh-history-substring-search"]="https://github.com/zsh-users/zsh-history-substring-search.git"
+        ["zsh-bash-completions-fallback"]="https://github.com/3v1n0/zsh-bash-completions-fallback.git"
+        ["git-davidde"]="https://github.com/davidde/git.git"
+        ["zsh-autopair"]="https://github.com/hlissner/zsh-autopair.git"
+        ["zsh-auto-notify"]="https://github.com/MichaelAquilina/zsh-auto-notify.git"
+        ["zsh-dircolors-solarized"]="https://github.com/joel-porquet/zsh-dircolors-solarized.git"
+        ["zsh-lazyload"]="https://github.com/qoomon/zsh-lazyload.git"
     )
 
     for name in "${!zsh_plugins[@]}"; do
         local url="${zsh_plugins[$name]}"
-        local dest="$plugins_dir/$name"
+        local dest="$custom_plugins_dir/$name"
 
         if [[ -d "$dest" ]]; then
             log_info "Already cloned: $name"
