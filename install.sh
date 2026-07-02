@@ -1340,10 +1340,46 @@ config_file = sys.argv[1]
 args = sys.argv[2:]
 
 def strip_comments(text):
-    """Remove JSONC comments (both // and /* */) for parsing."""
-    text = re.sub(r'//.*$', '', text, flags=re.MULTILINE)
-    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
-    return text
+    """Remove JSONC comments (// and /* */) while preserving strings."""
+    result = []
+    i = 0
+    in_string = False
+    string_char = None
+    while i < len(text):
+        ch = text[i]
+        if in_string:
+            result.append(ch)
+            if ch == '\\':
+                i += 1
+                if i < len(text):
+                    result.append(text[i])
+            elif ch == string_char:
+                in_string = False
+        elif ch in ('"', "'"):
+            in_string = True
+            string_char = ch
+            result.append(ch)
+        elif ch == '/' and i + 1 < len(text):
+            next_ch = text[i + 1]
+            if next_ch == '/':
+                # Line comment — skip to end of line
+                i = text.find('\n', i)
+                if i == -1:
+                    break
+                continue
+            elif next_ch == '*':
+                # Block comment — skip to */
+                end = text.find('*/', i + 2)
+                if end == -1:
+                    break
+                i = end + 1
+                continue
+            else:
+                result.append(ch)
+        else:
+            result.append(ch)
+        i += 1
+    return ''.join(result)
 
 with open(config_file, 'r') as f:
     content = f.read()
