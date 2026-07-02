@@ -43,6 +43,25 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 BOLD='\033[1m'
 
+# Ensure common tool paths are available throughout the script.
+# This is critical on immutable distros where brew installs tools to
+# /home/linuxbrew/.linuxbrew/bin/ and rustup puts cargo in ~/.cargo/bin/.
+# Without this, subshells (e.g., mnemoria install script) can't find cargo.
+for _path_dir in \
+    "$HOME/.cargo/bin" \
+    "$HOME/.local/bin" \
+    "$HOME/.opencode/bin" \
+    /home/linuxbrew/.linuxbrew/bin \
+    /opt/homebrew/bin; do
+    if [[ -d "$_path_dir" ]]; then
+        case ":$PATH:" in
+            *":$_path_dir:"*) ;;  # already in PATH
+            *) PATH="$_path_dir:$PATH" ;;
+        esac
+    fi
+done
+unset _path_dir
+
 #===============================================================================
 # HELPER FUNCTIONS
 #===============================================================================
@@ -380,26 +399,26 @@ install_packages() {
         pacman)
             log_info "Running: sudo pacman -S --needed --noconfirm ${unique_pkgs[*]}"
             if [[ "$DRY_RUN" == false ]]; then
-                sudo pacman -S --needed --noconfirm "${unique_pkgs[@]}" 2>&1 | tail -5 || log_warn "Some packages may not have installed correctly."
+                sudo pacman -S --needed --noconfirm "${unique_pkgs[@]}" 2>&1 || log_warn "Some packages may not have installed correctly."
             fi
             ;;
         apt)
             log_info "Running: sudo apt update && sudo apt install -y ${unique_pkgs[*]}"
             if [[ "$DRY_RUN" == false ]]; then
-                sudo apt update 2>&1 | tail -2
-                sudo apt install -y "${unique_pkgs[@]}" 2>&1 | tail -5 || log_warn "Some packages may not have installed correctly."
+                sudo apt update 2>&1
+                sudo apt install -y "${unique_pkgs[@]}" 2>&1 || log_warn "Some packages may not have installed correctly."
             fi
             ;;
         dnf)
             log_info "Running: sudo dnf install -y ${unique_pkgs[*]}"
             if [[ "$DRY_RUN" == false ]]; then
-                sudo dnf install -y "${unique_pkgs[@]}" 2>&1 | tail -5 || log_warn "Some packages may not have installed correctly."
+                sudo dnf install -y "${unique_pkgs[@]}" 2>&1 || log_warn "Some packages may not have installed correctly."
             fi
             ;;
         zypper)
             log_info "Running: sudo zypper install -y ${unique_pkgs[*]}"
             if [[ "$DRY_RUN" == false ]]; then
-                sudo zypper install -y "${unique_pkgs[@]}" 2>&1 | tail -5 || log_warn "Some packages may not have installed correctly."
+                sudo zypper install -y "${unique_pkgs[@]}" 2>&1 || log_warn "Some packages may not have installed correctly."
             fi
             ;;
     esac
@@ -418,9 +437,9 @@ install_brew_packages() {
         log_step "Installing Homebrew..."
         if [[ "$DRY_RUN" == false ]]; then
             if cmd_exists curl; then
-                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 2>&1 | tail -5
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 2>&1
             elif cmd_exists wget; then
-                /bin/bash -c "$(wget -qO- https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 2>&1 | tail -5
+                /bin/bash -c "$(wget -qO- https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 2>&1
             else
                 log_error "Neither curl nor wget found. Cannot install Homebrew."
                 return 1
@@ -476,7 +495,7 @@ install_brew_packages() {
 
     log_step "Installing packages with brew..."
     if [[ "$DRY_RUN" == false ]]; then
-        brew install "${unique_pkgs[@]}" 2>&1 | tail -10 || log_warn "Some packages may not have installed correctly."
+        brew install "${unique_pkgs[@]}" 2>&1 || log_warn "Some packages may not have installed correctly."
     else
         log_info "  DRY-RUN: Would run: brew install ${unique_pkgs[*]}"
     fi
@@ -489,7 +508,7 @@ install_brew_packages() {
         local system_pkgs=(i3-wm i3lock i3status rofi dunst picom polybar kitty alacritty zathura zathura-pdf-mupdf cmus)
 
         if [[ "$DRY_RUN" == false ]]; then
-            sudo rpm-ostree install --apply-live "${system_pkgs[@]}" 2>&1 | tail -10 || log_warn "Some system packages may not have installed correctly."
+            sudo rpm-ostree install --apply-live "${system_pkgs[@]}" 2>&1 || log_warn "Some system packages may not have installed correctly."
             log_info "A reboot may be required for all changes to take effect."
         else
             log_info "  DRY-RUN: Would run: sudo rpm-ostree install --apply-live ${system_pkgs[*]}"
@@ -511,23 +530,24 @@ install_mnemoria() {
         return 0
     fi
 
-    log_step "Installing mnemoria..."
+    # Mnemoria requires cargo (Rust). Check before attempting install.
+    if ! cmd_exists cargo; then
+        log_warn "Cargo (Rust) not found in PATH. Cannot install mnemoria."
+        log_warn "Install Rust first: https://rustup.rs"
+        log_warn "Then run: cargo install mnemoria@0.3.5"
+        return 0  # Not a fatal error — skip gracefully
+    fi
+
+    log_step "Installing mnemoria via cargo..."
     if [[ "$DRY_RUN" == false ]]; then
-        local mnemoria_tmp
-        mnemoria_tmp="$(mktemp)"
-        if curl -fsSL https://raw.githubusercontent.com/one-bit/oc-mnemoria/main/install.sh -o "$mnemoria_tmp" 2>&1 | tail -1; then
-            if sh "$mnemoria_tmp" 2>&1 | tail -5; then
-                log_success "Mnemoria installed."
-            else
-                log_warn "Mnemoria install script encountered issues (may be partially installed)."
-            fi
+        if cargo install mnemoria@0.3.5 2>&1; then
+            log_success "Mnemoria installed."
         else
-            log_warn "Failed to download mnemoria install script."
-            log_warn "Install manually from: https://github.com/one-bit/oc-mnemoria"
+            log_warn "cargo install mnemoria encountered issues."
+            log_warn "Try manually: cargo install mnemoria@0.3.5"
         fi
-        rm -f "$mnemoria_tmp"
     else
-        log_info "  DRY-RUN: Would run mnemoria install script"
+        log_info "  DRY-RUN: Would run: cargo install mnemoria@0.3.5"
     fi
 }
 
@@ -671,9 +691,9 @@ install_oh_my_zsh() {
             export RUNZSH=no
             export CHSH=no
             if cmd_exists curl; then
-                sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | tail -3
+                sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1
             elif cmd_exists wget; then
-                sh -c "$(wget -qO- https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | tail -3
+                sh -c "$(wget -qO- https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1
             else
                 log_error "Neither curl nor wget found. Cannot install Oh My Zsh."
                 return 1
@@ -689,7 +709,7 @@ install_oh_my_zsh() {
     if [[ ! -d "$p10k_dir" ]]; then
         log_step "Installing Powerlevel10k theme..."
         if [[ "$DRY_RUN" == false ]]; then
-            git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir" 2>&1 | tail -2
+            git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir" 2>&1
             log_success "Powerlevel10k installed."
         else
             log_info "  DRY-RUN: Would clone Powerlevel10k to $p10k_dir"
@@ -705,7 +725,7 @@ install_oh_my_zsh() {
     if [[ ! -d "${custom_plugins_dir}/zsh-autosuggestions" ]]; then
         log_step "Installing zsh-autosuggestions plugin..."
         if [[ "$DRY_RUN" == false ]]; then
-            git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git "${custom_plugins_dir}/zsh-autosuggestions" 2>&1 | tail -1
+            git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git "${custom_plugins_dir}/zsh-autosuggestions" 2>&1
         fi
     fi
 
@@ -713,7 +733,7 @@ install_oh_my_zsh() {
     if [[ ! -d "${custom_plugins_dir}/zsh-completions" ]]; then
         log_step "Installing zsh-completions plugin..."
         if [[ "$DRY_RUN" == false ]]; then
-            git clone --depth=1 https://github.com/zsh-users/zsh-completions.git "${custom_plugins_dir}/zsh-completions" 2>&1 | tail -1
+            git clone --depth=1 https://github.com/zsh-users/zsh-completions.git "${custom_plugins_dir}/zsh-completions" 2>&1
         fi
     fi
 
@@ -721,7 +741,7 @@ install_oh_my_zsh() {
     if [[ ! -d "${custom_plugins_dir}/zsh-you-should-use" ]]; then
         log_step "Installing zsh-you-should-use plugin..."
         if [[ "$DRY_RUN" == false ]]; then
-            git clone --depth=1 https://github.com/MichaelAquilina/zsh-you-should-use.git "${custom_plugins_dir}/zsh-you-should-use" 2>&1 | tail -1
+            git clone --depth=1 https://github.com/MichaelAquilina/zsh-you-should-use.git "${custom_plugins_dir}/zsh-you-should-use" 2>&1
         fi
     fi
 
@@ -729,7 +749,7 @@ install_oh_my_zsh() {
     if [[ ! -d "${custom_plugins_dir}/fzf-tab" ]]; then
         log_step "Installing fzf-tab plugin..."
         if [[ "$DRY_RUN" == false ]]; then
-            git clone --depth=1 https://github.com/Aloxaf/fzf-tab.git "${custom_plugins_dir}/fzf-tab" 2>&1 | tail -1
+            git clone --depth=1 https://github.com/Aloxaf/fzf-tab.git "${custom_plugins_dir}/fzf-tab" 2>&1
         fi
     fi
 
@@ -1112,7 +1132,7 @@ install_zsh_plugins() {
 
         log_step "Cloning $name..."
         if [[ "$DRY_RUN" == false ]]; then
-            if git clone --depth=1 "$url" "$dest" 2>&1 | tail -2; then
+            if git clone --depth=1 "$url" "$dest" 2>&1; then
                 log_success "Cloned: $name"
             else
                 log_warn "Failed to clone: $name ($url)"
@@ -1160,9 +1180,9 @@ install_fonts() {
 
         if [[ "$DRY_RUN" == false ]]; then
             if cmd_exists curl; then
-                curl -fSL "$url" -o "$tmp_dir/$filename" 2>&1 | tail -1
+                curl -fSL "$url" -o "$tmp_dir/$filename" 2>&1
             elif cmd_exists wget; then
-                wget -q "$url" -O "$tmp_dir/$filename" 2>&1 | tail -1
+                wget -q "$url" -O "$tmp_dir/$filename" 2>&1
             else
                 log_error "Neither curl nor wget found. Cannot download fonts."
                 rm -rf "$tmp_dir"
@@ -1192,14 +1212,14 @@ install_fonts() {
             if cmd_exists curl; then
                 curl -fSL --no-check-certificate \
                     "https://raw.githubusercontent.com/fahadahammed/linux-bangla-fonts/master/dist/lbfi" \
-                    -o "$lbfi_bin" 2>&1 | tail -1
+                    -o "$lbfi_bin" 2>&1
             elif cmd_exists wget; then
                 wget --no-check-certificate -q \
                     "https://raw.githubusercontent.com/fahadahammed/linux-bangla-fonts/master/dist/lbfi" \
-                    -O "$lbfi_bin" 2>&1 | tail -1
+                    -O "$lbfi_bin" 2>&1
             fi
             chmod +x "$lbfi_bin"
-            "$lbfi_bin" 2>&1 | tail -5 || log_warn "Bangla font install may have partially failed."
+            "$lbfi_bin" 2>&1 || log_warn "Bangla font install may have partially failed."
             log_success "Bangla fonts installed."
         else
             log_info "  DRY-RUN: Would download and run lbfi for Bangla fonts"
@@ -1233,7 +1253,7 @@ install_astronvim() {
     log_step "Installing AstroNvim..."
     if [[ "$DRY_RUN" == false ]]; then
         if cmd_exists git; then
-            git clone --depth 1 "https://github.com/AstroNvim/template" "$HOME/.config/nvim" 2>&1 | tail -3
+            git clone --depth 1 "https://github.com/AstroNvim/template" "$HOME/.config/nvim" 2>&1
             rm -rf "$HOME/.config/nvim/.git"
             log_success "AstroNvim installed to ~/.config/nvim"
         else
@@ -1249,7 +1269,7 @@ install_astronvim() {
         log_step "Installing vim-plug for legacy Vim..."
         if [[ "$DRY_RUN" == false ]]; then
             curl -fLo "$HOME/.vim/autoload/plug.vim" --create-dirs \
-                "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim" 2>&1 | tail -1 || log_warn "vim-plug installation failed."
+                "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim" 2>&1 || log_warn "vim-plug installation failed."
         fi
     fi
 }
@@ -1279,7 +1299,7 @@ install_opencode() {
         log_step "Installing OpenCode..."
         if [[ "$DRY_RUN" == false ]]; then
             if cmd_exists curl; then
-                curl -fsSL https://opencode.ai/install | bash 2>&1 | tail -5
+                curl -fsSL https://opencode.ai/install | bash 2>&1
             else
                 log_error "curl is required to install OpenCode."
                 return 1
@@ -1511,7 +1531,7 @@ PYEOF
             local ss_dir="$HOME/.config/opencode/plugin/shell-strategy"
             if [[ ! -d "$ss_dir" ]]; then
                 mkdir -p "$HOME/.config/opencode/plugin"
-                if git clone --depth=1 https://github.com/JRedeker/opencode-shell-strategy.git "$ss_dir" 2>&1 | tail -2; then
+                if git clone --depth=1 https://github.com/JRedeker/opencode-shell-strategy.git "$ss_dir" 2>&1; then
                     log_success "shell-strategy cloned to $ss_dir"
                 else
                     log_warn "Failed to clone shell-strategy repository."
@@ -1533,7 +1553,7 @@ PYEOF
                 local ss_dir="$HOME/.config/opencode/plugin/shell-strategy"
                 if [[ ! -d "$ss_dir" ]]; then
                     mkdir -p "$HOME/.config/opencode/plugin"
-                    if git clone --depth=1 https://github.com/JRedeker/opencode-shell-strategy.git "$ss_dir" 2>&1 | tail -2; then
+                    if git clone --depth=1 https://github.com/JRedeker/opencode-shell-strategy.git "$ss_dir" 2>&1; then
                         log_success "shell-strategy cloned to $ss_dir"
                     else
                         log_warn "Failed to clone shell-strategy repository."
@@ -1587,7 +1607,7 @@ PYEOF
             if ! cmd_exists snip; then
                 if cmd_exists go; then
                     log_step "Installing snip binary via 'go install'..."
-                    if go install github.com/edouard-claude/snip/cmd/snip@latest 2>&1 | tail -3; then
+                    if go install github.com/edouard-claude/snip/cmd/snip@latest 2>&1; then
                         log_success "snip binary installed via go."
                     else
                         log_warn "Failed to install snip via go."
@@ -1615,7 +1635,7 @@ PYEOF
                 if ! cmd_exists snip; then
                     if cmd_exists go; then
                         log_step "Installing snip binary via 'go install'..."
-                        if go install github.com/edouard-claude/snip/cmd/snip@latest 2>&1 | tail -3; then
+                        if go install github.com/edouard-claude/snip/cmd/snip@latest 2>&1; then
                             log_success "snip binary installed via go."
                         else
                             log_warn "Failed to install snip via go."
@@ -1667,59 +1687,36 @@ PYEOF
     fi
 
     #---------------------------------------------------------------------------
-    # 6. oc-mnemoria (install script handles everything)
+    # 6. oc-mnemoria (cargo install — cleaner than running upstream script)
     #---------------------------------------------------------------------------
-    if $install_all_plugins; then
+    _install_mnemoria_plugin() {
         log_step "6/7 — oc-mnemoria..."
         if [[ "$DRY_RUN" == false ]]; then
             if cmd_exists mnemoria; then
                 log_info "oc-mnemoria CLI already installed."
+            elif ! cmd_exists cargo; then
+                log_warn "Cargo (Rust) not found. Skipping mnemoria."
+                log_warn "Install Rust: https://rustup.rs  then: cargo install mnemoria@0.3.5"
             else
-                log_step "Downloading and running oc-mnemoria install script..."
-                local mnemoria_tmp
-                mnemoria_tmp="$(mktemp)"
-                if curl -fsSL https://raw.githubusercontent.com/one-bit/oc-mnemoria/main/install.sh -o "$mnemoria_tmp" 2>&1 | tail -1; then
-                    if sh "$mnemoria_tmp" 2>&1 | tail -5; then
-                        log_success "oc-mnemoria installed."
-                    else
-                        log_warn "oc-mnemoria install script encountered issues (may be partially installed)."
-                    fi
+                log_step "Installing mnemoria via cargo..."
+                if cargo install mnemoria@0.3.5 2>&1; then
+                    log_success "oc-mnemoria installed."
                 else
-                    log_warn "Failed to download oc-mnemoria install script."
-                    log_warn "Install manually from: https://github.com/one-bit/oc-mnemoria"
+                    log_warn "cargo install mnemoria failed. Try manually: cargo install mnemoria@0.3.5"
                 fi
-                rm -f "$mnemoria_tmp"
             fi
         else
-            log_info "  DRY-RUN: Would run oc-mnemoria install script"
+            log_info "  DRY-RUN: Would run: cargo install mnemoria@0.3.5"
         fi
+    }
+
+    if $install_all_plugins; then
+        _install_mnemoria_plugin
     else
         echo -e "  ${YELLOW}[y/N]${NC} Install oc-mnemoria (memory & session management)?"
         read -r resp
         if [[ "${resp,,}" == "y" ]]; then
-            log_step "6/7 — oc-mnemoria..."
-            if [[ "$DRY_RUN" == false ]]; then
-                if cmd_exists mnemoria; then
-                    log_info "oc-mnemoria CLI already installed."
-                else
-                    log_step "Downloading and running oc-mnemoria install script..."
-                    local mnemoria_tmp
-                    mnemoria_tmp="$(mktemp)"
-                    if curl -fsSL https://raw.githubusercontent.com/one-bit/oc-mnemoria/main/install.sh -o "$mnemoria_tmp" 2>&1 | tail -1; then
-                        if sh "$mnemoria_tmp" 2>&1 | tail -5; then
-                            log_success "oc-mnemoria installed."
-                        else
-                            log_warn "oc-mnemoria install script encountered issues (may be partially installed)."
-                        fi
-                    else
-                        log_warn "Failed to download oc-mnemoria install script."
-                        log_warn "Install manually from: https://github.com/one-bit/oc-mnemoria"
-                    fi
-                    rm -f "$mnemoria_tmp"
-                fi
-            else
-                log_info "  DRY-RUN: Would run oc-mnemoria install script"
-            fi
+            _install_mnemoria_plugin
         else
             log_step "6/7 — oc-mnemoria: skipped"
         fi
@@ -1733,8 +1730,8 @@ PYEOF
         if [[ "$DRY_RUN" == false ]]; then
             local mc_tmp
             mc_tmp="$(mktemp)"
-            if curl -fsSL https://raw.githubusercontent.com/cortexkit/magic-context/master/scripts/install.sh -o "$mc_tmp" 2>&1 | tail -1; then
-                if sh "$mc_tmp" 2>&1 | tail -5; then
+            if curl -fsSL https://raw.githubusercontent.com/cortexkit/magic-context/master/scripts/install.sh -o "$mc_tmp" 2>&1; then
+                if sh "$mc_tmp" 2>&1; then
                     log_success "magic-context installed via script."
                 else
                     log_warn "magic-context install script failed — applying manual config..."
@@ -1760,8 +1757,8 @@ PYEOF
             if [[ "$DRY_RUN" == false ]]; then
                 local mc_tmp
                 mc_tmp="$(mktemp)"
-                if curl -fsSL https://raw.githubusercontent.com/cortexkit/magic-context/master/scripts/install.sh -o "$mc_tmp" 2>&1 | tail -1; then
-                    if sh "$mc_tmp" 2>&1 | tail -5; then
+                if curl -fsSL https://raw.githubusercontent.com/cortexkit/magic-context/master/scripts/install.sh -o "$mc_tmp" 2>&1; then
+                    if sh "$mc_tmp" 2>&1; then
                         log_success "magic-context installed via script."
                     else
                         log_warn "magic-context install script failed — applying manual config..."
@@ -1906,9 +1903,6 @@ install_scripts() {
         create_symlink "$DOTFILES_DIR/OpenWithMetadata.sh" "$HOME/.local/bin/OpenWithMetadata.sh" "Open with metadata script"
     fi
 
-    # Xorg mouse configs
-    create_symlink "$DOTFILES_DIR/50-mouse-acceleration.conf" "/etc/X11/xorg.conf.d/50-mouse-acceleration.conf" "Mouse acceleration config"
-    create_symlink "$DOTFILES_DIR/50-mouse-deceleration.conf" "/etc/X11/xorg.conf.d/50-mouse-deceleration.conf" "Mouse deceleration config"
 }
 
 #===============================================================================
@@ -2100,38 +2094,9 @@ main() {
         install_fonts
         install_mnemoria
 
-        # Ask about Xorg configs (requires sudo)
-        echo ""
-        echo -e "${BOLD}${YELLOW}Install Xorg mouse configs (requires sudo)?${NC} (y/N): "
-        read -r install_xorg_choice
-        if [[ "${install_xorg_choice,,}" == "y" ]]; then
-            log_header "Xorg Configurations"
-            if [[ "$DRY_RUN" == false ]]; then
-                sudo mkdir -p /etc/X11/xorg.conf.d/
-                sudo ln -sf "$DOTFILES_DIR/50-mouse-acceleration.conf" /etc/X11/xorg.conf.d/50-mouse-acceleration.conf
-                sudo ln -sf "$DOTFILES_DIR/50-mouse-deceleration.conf" /etc/X11/xorg.conf.d/50-mouse-deceleration.conf
-                log_success "Xorg mouse configs installed."
-            else
-                log_info "  DRY-RUN: Would install Xorg mouse configs to /etc/X11/xorg.conf.d/"
-            fi
-        fi
-
     else
         # Show interactive menu
         show_menu
-
-        # Ask about Xorg configs
-        echo ""
-        echo -e "${BOLD}${YELLOW}Install Xorg mouse configs (requires sudo)?${NC} (y/N): "
-        read -r install_xorg_choice
-        if [[ "${install_xorg_choice,,}" == "y" ]]; then
-            log_header "Xorg Configurations"
-            if [[ "$DRY_RUN" == false ]]; then
-                sudo mkdir -p /etc/X11/xorg.conf.d/ 2>/dev/null || true
-                sudo ln -sf "$DOTFILES_DIR/50-mouse-acceleration.conf" /etc/X11/xorg.conf.d/50-mouse-acceleration.conf 2>/dev/null || log_warn "Could not install Xorg mouse config (run with sudo)"
-                sudo ln -sf "$DOTFILES_DIR/50-mouse-deceleration.conf" /etc/X11/xorg.conf.d/50-mouse-deceleration.conf 2>/dev/null || log_warn "Could not install Xorg mouse config (run with sudo)"
-            fi
-        fi
     fi
 
     # Wallpapers
