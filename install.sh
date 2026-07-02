@@ -1796,6 +1796,34 @@ install_shell_configs() {
     create_symlink "$DOTFILES_DIR/.xinitrc" "$HOME/.xinitrc" "Xinitrc"
     create_symlink "$DOTFILES_DIR/.Xresources" "$HOME/.Xresources" "Xresources"
     create_symlink "$DOTFILES_DIR/base.ini" "$HOME/.config/fast-syntax-highlighting/base.ini" "Fast syntax highlighting theme"
+
+    # Set zsh as default shell
+    local zsh_path
+    zsh_path="$(command -v zsh)"
+    if [[ -n "$zsh_path" ]]; then
+        local current_shell
+        current_shell="$(basename "$SHELL")"
+        if [[ "$current_shell" != "zsh" ]]; then
+            log_step "Setting default shell to zsh..."
+            if [[ "$DRY_RUN" == false ]]; then
+                if grep -qx "$zsh_path" /etc/shells 2>/dev/null; then
+                    chsh -s "$zsh_path" 2>&1 && log_success "Default shell changed to zsh." \
+                        || log_warn "Could not change default shell (try: chsh -s $zsh_path)"
+                else
+                    log_warn "$zsh_path not found in /etc/shells. Adding it first..."
+                    echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
+                    chsh -s "$zsh_path" 2>&1 && log_success "Default shell changed to zsh." \
+                        || log_warn "Could not change default shell (try: chsh -s $zsh_path)"
+                fi
+            else
+                log_info "  DRY-RUN: Would run: chsh -s $zsh_path"
+            fi
+        else
+            log_info "Default shell is already zsh."
+        fi
+    else
+        log_warn "zsh not found in PATH. Cannot set as default shell."
+    fi
 }
 
 install_wm_configs() {
