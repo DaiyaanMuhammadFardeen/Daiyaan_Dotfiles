@@ -222,7 +222,7 @@ install_packages() {
             sys_pkgs=(fastfetch htop tree)
 
             # Dev
-            dev_pkgs=(nodejs npm)
+            dev_pkgs=(nodejs npm gh)
             ;;
 
         debian)
@@ -257,7 +257,7 @@ install_packages() {
             sys_pkgs=(fastfetch htop tree)
 
             # Dev
-            dev_pkgs=(nodejs npm)
+            dev_pkgs=(nodejs npm gh)
             ;;
 
         fedora)
@@ -289,7 +289,7 @@ install_packages() {
             sys_pkgs=(fastfetch htop tree)
 
             # Dev
-            dev_pkgs=(nodejs npm)
+            dev_pkgs=(nodejs npm gh)
             ;;
 
         opensuse)
@@ -321,7 +321,7 @@ install_packages() {
             sys_pkgs=(fastfetch htop tree)
 
             # Dev
-            dev_pkgs=(nodejs npm)
+            dev_pkgs=(nodejs npm gh)
             ;;
     esac
 
@@ -380,6 +380,66 @@ install_packages() {
             ;;
     esac
     log_success "Package installation complete."
+}
+
+#===============================================================================
+# GITHUB CLI AUTHENTICATION
+#===============================================================================
+
+setup_gh_auth() {
+    log_header "GitHub CLI Authentication"
+
+    if ! cmd_exists gh; then
+        log_warn "GitHub CLI (gh) is not installed. Skipping authentication."
+        return 0
+    fi
+
+    # Check if already authenticated
+    if gh auth status &>/dev/null; then
+        log_success "GitHub CLI is already authenticated."
+        local gh_user
+        gh_user="$(gh api user -q '.login' 2>/dev/null)"
+        if [[ -n "$gh_user" ]]; then
+            log_info "Logged in as: $gh_user"
+        fi
+        return 0
+    fi
+
+    log_step "GitHub CLI is not authenticated."
+    echo -e "${YELLOW}Would you like to authenticate with GitHub now?${NC} (y/N): "
+    read -r auth_choice
+
+    if [[ "${auth_choice,,}" == "y" ]]; then
+        log_step "Starting GitHub CLI authentication..."
+        log_info "This will open a browser for GitHub OAuth."
+        log_info "If browser doesn't open, copy the URL printed below."
+        echo ""
+
+        if [[ "$DRY_RUN" == false ]]; then
+            gh auth login --web --git-protocol https 2>&1 || {
+                log_warn "Web authentication failed. Trying device flow..."
+                gh auth login -p https -w 2>&1
+            }
+
+            # Verify authentication
+            if gh auth status &>/dev/null; then
+                log_success "GitHub CLI authenticated successfully!"
+                local gh_user
+                gh_user="$(gh api user -q '.login' 2>/dev/null)"
+                if [[ -n "$gh_user" ]]; then
+                    log_info "Logged in as: $gh_user"
+                fi
+            else
+                log_warn "GitHub CLI authentication may have failed."
+                log_info "You can run 'gh auth login' manually later."
+            fi
+        else
+            log_info "  DRY-RUN: Would run 'gh auth login --web'"
+        fi
+    else
+        log_info "Skipping GitHub CLI authentication."
+        log_info "You can run 'gh auth login' later to authenticate."
+    fi
 }
 
 #===============================================================================
@@ -1630,6 +1690,7 @@ show_menu() {
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[S]${NC} Scripts (switch_theme, OpenWith)         ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[F]${NC} Fonts (JetBrainsMono, FiraCode, Bangla) ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[P]${NC} Install Required Packages                 ${BOLD}${MAGENTA}│${NC}"
+    echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[G]${NC} Setup GitHub CLI Auth (gh auth login)    ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[O]${NC} Install Oh My Zsh (replaces Antigen)      ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${GREEN}[A]${NC} Install ALL                                ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${RED}[Q]${NC} Quit                                         ${BOLD}${MAGENTA}│${NC}"
@@ -1674,6 +1735,7 @@ show_menu() {
             S|SCRIPTS)  install_scripts ;;
             F|FONTS)    install_fonts ;;
             P|PKGS)     install_packages ;;
+            G|GH)       setup_gh_auth ;;
             O|OMZ)      install_oh_my_zsh ;;
             A|ALL)      ;;  # handled above
             Q|QUIT)     ;;  # handled above
@@ -1704,6 +1766,7 @@ show_menu() {
         read -r install_pkgs_choice
         if [[ "${install_pkgs_choice,,}" == "y" ]]; then
             install_packages
+            setup_gh_auth
         fi
 
         echo ""
@@ -1753,6 +1816,7 @@ main() {
         read -r install_pkgs_choice
         if [[ "${install_pkgs_choice,,}" == "y" ]]; then
             install_packages
+            setup_gh_auth
         fi
 
         # Ask about Oh My Zsh
