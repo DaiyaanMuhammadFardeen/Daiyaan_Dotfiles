@@ -933,6 +933,51 @@ ZSHRC_EOF
 }
 
 #===============================================================================
+# ZSH PLUGINS CLONING
+#===============================================================================
+
+install_zsh_plugins() {
+    log_header "Zsh Plugins (~/Repositories/Zsh-plugins/)"
+
+    local plugins_dir="$HOME/Repositories/Zsh-plugins"
+
+    if [[ "$DRY_RUN" == false ]]; then
+        mkdir -p "$plugins_dir"
+    fi
+
+    # Define plugins: name → git URL
+    declare -A zsh_plugins=(
+        ["fast-syntax-highlighting"]="https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
+        ["git"]="https://github.com/davidde/git.git"
+        ["zsh-bash-completions-fallback"]="https://github.com/3v1n0/zsh-bash-completions-fallback.git"
+        ["zsh-history-substring-search"]="https://github.com/zsh-users/zsh-history-substring-search.git"
+    )
+
+    for name in "${!zsh_plugins[@]}"; do
+        local url="${zsh_plugins[$name]}"
+        local dest="$plugins_dir/$name"
+
+        if [[ -d "$dest" ]]; then
+            log_info "Already cloned: $name"
+            continue
+        fi
+
+        log_step "Cloning $name..."
+        if [[ "$DRY_RUN" == false ]]; then
+            if git clone --depth=1 "$url" "$dest" 2>&1 | tail -2; then
+                log_success "Cloned: $name"
+            else
+                log_warn "Failed to clone: $name ($url)"
+            fi
+        else
+            log_info "  DRY-RUN: Would clone $url → $dest"
+        fi
+    done
+
+    log_success "Zsh plugins setup complete."
+}
+
+#===============================================================================
 # FONT INSTALLATION
 #===============================================================================
 
@@ -1578,7 +1623,9 @@ install_wm_configs() {
 
 install_terminal_configs() {
     log_header "Terminal Configurations"
-    create_symlink "$DOTFILES_DIR/kitty/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf" "Kitty config"
+
+    # Kitty: symlink dark theme as default kitty.conf (switch_theme.sh toggles between dark/light)
+    create_symlink "$DOTFILES_DIR/kitty/dark.kitty.conf" "$HOME/.config/kitty/kitty.conf" "Kitty config (dark default)"
     create_symlink "$DOTFILES_DIR/kitty/dark.kitty.conf" "$HOME/.config/kitty/dark.kitty.conf" "Kitty dark theme"
     create_symlink "$DOTFILES_DIR/kitty/light.kitty.conf" "$HOME/.config/kitty/light.kitty.conf" "Kitty light theme"
     create_symlink "$DOTFILES_DIR/kitty/unipicker.sh" "$HOME/.config/kitty/unipicker.sh" "Kitty unipicker"
@@ -1692,6 +1739,7 @@ show_menu() {
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[P]${NC} Install Required Packages                 ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[G]${NC} Setup GitHub CLI Auth (gh auth login)    ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[O]${NC} Install Oh My Zsh (replaces Antigen)      ${BOLD}${MAGENTA}│${NC}"
+    echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[Z]${NC} Clone Zsh Plugins (fast-syntax etc.)     ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${GREEN}[A]${NC} Install ALL                                ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${RED}[Q]${NC} Quit                                         ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}└─────────────────────────────────────────┘${NC}"
@@ -1737,6 +1785,7 @@ show_menu() {
             P|PKGS)     install_packages ;;
             G|GH)       setup_gh_auth ;;
             O|OMZ)      install_oh_my_zsh ;;
+            Z|ZSHPLUGINS) install_zsh_plugins ;;
             A|ALL)      ;;  # handled above
             Q|QUIT)     ;;  # handled above
             *)          log_warn "Unknown option: $choice" ;;
@@ -1756,6 +1805,7 @@ show_menu() {
         install_ai_assistant_configs
         install_scripts
         install_fonts
+        install_zsh_plugins
     fi
 
     # Only ask about packages and Oh My Zsh if not already selected
@@ -1774,6 +1824,13 @@ show_menu() {
         read -r install_omz_choice
         if [[ "${install_omz_choice,,}" == "y" ]]; then
             install_oh_my_zsh
+        fi
+
+        echo ""
+        echo -e "  ${YELLOW}[y]${NC} Clone Zsh plugins (fast-syntax-highlighting, git, etc.)?"
+        read -r install_zshplugins_choice
+        if [[ "${install_zshplugins_choice,,}" == "y" ]]; then
+            install_zsh_plugins
         fi
     fi
 }
@@ -1826,6 +1883,9 @@ main() {
         if [[ "${install_omz_choice,,}" == "y" ]]; then
             install_oh_my_zsh
         fi
+
+        # Clone Zsh plugins
+        install_zsh_plugins
 
         # Install all configs
         install_shell_configs
