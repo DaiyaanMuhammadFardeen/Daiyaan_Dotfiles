@@ -572,9 +572,8 @@ backup_existing() {
             mkdir -p "$(dirname "$dest")"
             mv "$src" "$dest"
         fi
-        return 0
     fi
-    return 1
+    return 0
 }
 
 #===============================================================================
