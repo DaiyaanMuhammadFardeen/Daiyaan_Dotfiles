@@ -246,7 +246,7 @@ install_packages() {
             sys_pkgs=(fastfetch htop tree)
 
             # Dev
-            dev_pkgs=(nodejs npm gh)
+            dev_pkgs=(nodejs npm gh go rust cargo)
             ;;
 
         debian)
@@ -281,7 +281,7 @@ install_packages() {
             sys_pkgs=(fastfetch htop tree)
 
             # Dev
-            dev_pkgs=(nodejs npm gh)
+            dev_pkgs=(nodejs npm gh golang cargo)
             ;;
 
         fedora)
@@ -313,7 +313,7 @@ install_packages() {
             sys_pkgs=(fastfetch htop tree)
 
             # Dev
-            dev_pkgs=(nodejs npm gh)
+            dev_pkgs=(nodejs npm gh golang cargo)
             ;;
 
         opensuse)
@@ -345,7 +345,7 @@ install_packages() {
             sys_pkgs=(fastfetch htop tree)
 
             # Dev
-            dev_pkgs=(nodejs npm gh)
+            dev_pkgs=(nodejs npm gh golang cargo)
             ;;
     esac
 
@@ -452,7 +452,7 @@ install_brew_packages() {
     local shell_pkgs=(fzf)
     local fm_pkgs=(ranger bat lsd)
     local sys_pkgs=(htop tree)
-    local dev_pkgs=(node gh)
+    local dev_pkgs=(node gh go rust)
 
     # Combine all packages
     local all_pkgs=()
@@ -497,6 +497,38 @@ install_brew_packages() {
     fi
 
     log_success "Package installation complete."
+}
+
+#===============================================================================
+# MNEMORIA INSTALLATION
+#===============================================================================
+
+install_mnemoria() {
+    log_header "Mnemoria Installation"
+
+    if cmd_exists mnemoria; then
+        log_success "Mnemoria already installed."
+        return 0
+    fi
+
+    log_step "Installing mnemoria..."
+    if [[ "$DRY_RUN" == false ]]; then
+        local mnemoria_tmp
+        mnemoria_tmp="$(mktemp)"
+        if curl -fsSL https://raw.githubusercontent.com/one-bit/oc-mnemoria/main/install.sh -o "$mnemoria_tmp" 2>&1 | tail -1; then
+            if sh "$mnemoria_tmp" 2>&1 | tail -5; then
+                log_success "Mnemoria installed."
+            else
+                log_warn "Mnemoria install script encountered issues (may be partially installed)."
+            fi
+        else
+            log_warn "Failed to download mnemoria install script."
+            log_warn "Install manually from: https://github.com/one-bit/oc-mnemoria"
+        fi
+        rm -f "$mnemoria_tmp"
+    else
+        log_info "  DRY-RUN: Would run mnemoria install script"
+    fi
 }
 
 #===============================================================================
@@ -1972,6 +2004,7 @@ show_menu() {
         install_scripts
         install_fonts
         install_zsh_plugins
+        install_mnemoria
     fi
 
     # Only ask about packages and Oh My Zsh if not already selected
@@ -2065,6 +2098,7 @@ main() {
         install_ai_assistant_configs
         install_scripts
         install_fonts
+        install_mnemoria
 
         # Ask about Xorg configs (requires sudo)
         echo ""
