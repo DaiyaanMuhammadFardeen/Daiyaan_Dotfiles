@@ -1,0 +1,33 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@playwright/mcp@latest"
+      ],
+      "enabled": true
+    }
+  },
+  "plugin": [
+    "opencode-agent-skills",
+    "@tarquinen/opencode-dcp@latest",
+    "/home/daiyaan2002/Repositories/Opencode-Google-AI-Search-Plugin/dist/index.js",
+    "file:///home/daiyaan2002/Desktop/Projects/session-edit-plugin",
+    "oh-my-opencode-slim",
+    "/home/daiyaa2002/Repositories/ponytail/.opencode/plugins/polytail.mjs"
+  ],
+  "lsp": true,
+  "instructions": [
+    "~/.config/opencode/instructions/morph-tools.md"
+  ],
+  "agent": {
+    "explore": {
+      "disable": true
+    },
+    "general": {
+      "disable": true
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "swarm": {
+    "architect": {
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b"
+    },
+    "worker": {
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b"
+    },
+    "reviewer": {
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b"
+    }
+  }
+}
