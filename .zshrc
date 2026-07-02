@@ -21,6 +21,8 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 export CLICOLOR=1
 export QT_QPA_PLATFORMTHEME=qt5ct
 export PATH=jdk/bin:$PATH
+export HSA_ENABLE_SDMA=0
+export ROCM_FORCE_ENABLE_DP_FP16=1
 
 # ░█▀█░█▀▀░█░█░░░█░█░█▀▀░█▀▀░█▀▄
 # ░█░█░█▀▀░█▄█░░░█░█░▀▀█░█▀▀░█▀▄
@@ -228,6 +230,7 @@ alias ls='lsd -FAlX1 --group-dirs first --date relative --git --blocks permissio
 alias ll='lsd -FAl --total-size --group-dirs first --sort extension'
 alias tree='lsd --tree'
 alias c="clear"
+alias o="opencode"
 alias v="~/Repositories/Daiyaan_Dotfiles/OpenWithMetadata.sh"
 alias freespace='df --sync -h /'
 alias n="neofetch --source ~/.config/neofetch/ascii.txt"
@@ -240,6 +243,7 @@ alias u='unipicker --copy'
 alias d='dirs -v'
 alias rm='rm -rfv'
 alias make='make -s'
+alias xclip='xclip -sel clip'
 alias python='python -q'
 alias bat='bat --theme=TwoDark'
 alias dmenu_run="dmenu_run -fn JetBrainsMono:style=bold:size=12 -nb '#000000' -nf '#fffefe' -sb '#0a7aca' -sf '#fffefe'"
@@ -256,3 +260,24 @@ setopt EXTENDED_GLOB
 # source /usr/share/nvm/init-nvm.sh
 export XKB_DEFAULT_OPTIONS=caps:escape
 export HSA_OVERRIDE_GFX_VERSION=10.3.0
+export OLLAMA_FLASH_ATTENTION=1
+export OLLAMA_KV_CACHE_TYPE=q8_0
+export PATH="$HOME/.pyenv/bin:$PATH"
+
+# for flutter development
+export ANDROID_HOME=$HOME/Android/Sdk
+export ANDROID_SDK_ROOT=$ANDROID_HOME
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+
+export PATH="${HOME}/.npm-global/bin:${PATH}"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+
+# Added by qodercli install
+export PATH="$PATH:$HOME/.local/bin"
+
+# >>> oh-my-opencode-slim background subagents >>>
+export OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true
+# <<< oh-my-opencode-slim background subagents <<<
