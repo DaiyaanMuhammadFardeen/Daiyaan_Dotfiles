@@ -1229,10 +1229,19 @@ install_astronvim() {
 install_opencode() {
     log_header "OpenCode Installation"
 
-    # Check if opencode is installed, install if missing
+    # Check if opencode is installed (check PATH and common install locations)
+    local opencode_found=false
     if cmd_exists opencode; then
+        opencode_found=true
+    elif [[ -x "$HOME/.opencode/bin/opencode" ]]; then
+        opencode_found=true
+    elif [[ -x "$HOME/.local/bin/opencode" ]]; then
+        opencode_found=true
+    fi
+
+    if [[ "$opencode_found" == true ]]; then
         local opencode_path
-        opencode_path="$(command -v opencode)"
+        opencode_path="$(command -v opencode 2>/dev/null || echo "$HOME/.opencode/bin/opencode")"
         log_success "OpenCode already installed at: $opencode_path"
     else
         log_step "Installing OpenCode..."
@@ -1244,8 +1253,13 @@ install_opencode() {
                 return 1
             fi
 
+            # Add opencode bin to PATH for this session
+            if [[ -d "$HOME/.opencode/bin" ]]; then
+                export PATH="$HOME/.opencode/bin:$PATH"
+            fi
+
             # Verify installation
-            if cmd_exists opencode; then
+            if cmd_exists opencode || [[ -x "$HOME/.opencode/bin/opencode" ]]; then
                 log_success "OpenCode installed successfully."
             else
                 log_warn "OpenCode installation completed but binary not found in PATH."
