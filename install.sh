@@ -423,6 +423,21 @@ install_packages() {
             ;;
     esac
     log_success "Package installation complete."
+
+    # --- Pyenv (installed from git for all distros) ---
+    if [[ ! -d "$HOME/.pyenv" ]]; then
+        log_step "Installing pyenv from git..."
+        if [[ "$DRY_RUN" == false ]]; then
+            git clone https://github.com/pyenv/pyenv.git "$HOME/.pyenv" 2>&1
+            git clone https://github.com/pyenv/pyenv-virtualenv.git "$HOME/.pyenv/plugins/pyenv-virtualenv" 2>&1
+            export PATH="$HOME/.pyenv/bin:$PATH"
+            log_success "Pyenv + pyenv-virtualenv installed."
+        else
+            log_info "  DRY-RUN: Would clone pyenv and pyenv-virtualenv"
+        fi
+    else
+        log_success "Pyenv already installed."
+    fi
 }
 
 #===============================================================================
@@ -471,7 +486,7 @@ install_brew_packages() {
     local shell_pkgs=(fzf)
     local fm_pkgs=(ranger bat lsd)
     local sys_pkgs=(htop tree)
-    local dev_pkgs=(node gh go rust)
+    local dev_pkgs=(node gh go rust pyenv)
 
     # Combine all packages
     local all_pkgs=()
@@ -549,75 +564,6 @@ install_mnemoria() {
     else
         log_info "  DRY-RUN: Would run: cargo install mnemoria@0.3.5"
     fi
-}
-
-#===============================================================================
-# PYENV INSTALLATION
-#===============================================================================
-
-install_pyenv() {
-    log_header "Pyenv Installation"
-
-    if [[ -d "$HOME/.pyenv" ]] && cmd_exists pyenv; then
-        log_success "Pyenv already installed."
-        return 0
-    fi
-
-    # Install build dependencies for compiling Python versions
-    log_step "Installing build dependencies for pyenv..."
-    if [[ "$DRY_RUN" == false ]]; then
-        case "$DISTRO_FAMILY" in
-            arch)
-                sudo pacman -S --needed --noconfirm base-devel openssl zlib bzip2 readline sqlite xz tk libffi liblzma 2>/dev/null || true
-                ;;
-            debian)
-                sudo apt-get install -y build-essential libssl-dev zlib1g-dev libbz2-dev \
-                    libreadline-dev libsqlite3-dev libffi-dev liblzma-dev tk-dev 2>/dev/null || true
-                ;;
-            fedora|immutable)
-                sudo dnf install -y gcc make zlib-devel bzip2-devel readline-devel \
-                    sqlite-devel openssl-devel tk-devel libffi-devel xz-devel 2>/dev/null || true
-                ;;
-            opensuse)
-                sudo zypper install -y gcc make zlib-devel bzip2-devel readline-devel \
-                    sqlite3-devel openssl-devel tk-devel libffi-devel xz-devel 2>/dev/null || true
-                ;;
-            macos)
-                # macOS has Xcode CLT; no extra deps needed
-                ;;
-        esac
-    else
-        log_info "  DRY-RUN: Would install build dependencies"
-    fi
-
-    # Clone pyenv
-    log_step "Cloning pyenv..."
-    if [[ "$DRY_RUN" == false ]]; then
-        if [[ ! -d "$HOME/.pyenv" ]]; then
-            git clone https://github.com/pyenv/pyenv.git "$HOME/.pyenv" 2>&1
-        fi
-    else
-        log_info "  DRY-RUN: Would clone pyenv to ~/.pyenv"
-    fi
-
-    # Clone pyenv-virtualenv
-    log_step "Cloning pyenv-virtualenv..."
-    if [[ "$DRY_RUN" == false ]]; then
-        local plugins_dir="$HOME/.pyenv/plugins"
-        mkdir -p "$plugins_dir"
-        if [[ ! -d "$plugins_dir/pyenv-virtualenv" ]]; then
-            git clone https://github.com/pyenv/pyenv-virtualenv.git "$plugins_dir/pyenv-virtualenv" 2>&1
-        fi
-    else
-        log_info "  DRY-RUN: Would clone pyenv-virtualenv"
-    fi
-
-    # Add pyenv to PATH for this session
-    export PATH="$HOME/.pyenv/bin:$PATH"
-
-    log_success "Pyenv installed. Run 'pyenv install --list' to see available Python versions."
-    log_info "  Install a version: pyenv install 3.12"
-    log_info "  Set global default: pyenv global 3.12"
 }
 
 #===============================================================================
@@ -2036,7 +1982,6 @@ show_menu() {
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[G]${NC} Setup GitHub CLI Auth (gh auth login)    ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[O]${NC} Install Oh My Zsh (replaces Antigen)      ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[Z]${NC} Clone Zsh Plugins (fast-syntax etc.)     ${BOLD}${MAGENTA}│${NC}"
-    echo -e "${BOLD}${MAGENTA}│${NC} ${YELLOW}[Y]${NC} Pyenv (Python version manager)           ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${GREEN}[A]${NC} Install ALL                                ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}│${NC} ${RED}[Q]${NC} Quit                                         ${BOLD}${MAGENTA}│${NC}"
     echo -e "${BOLD}${MAGENTA}└─────────────────────────────────────────┘${NC}"
@@ -2083,7 +2028,6 @@ show_menu() {
             G|GH)       setup_gh_auth ;;
             O|OMZ)      install_oh_my_zsh ;;
             Z|ZSHPLUGINS) install_zsh_plugins ;;
-            Y|PYENV)    install_pyenv ;;
             A|ALL)      ;;  # handled above
             Q|QUIT)     ;;  # handled above
             *)          log_warn "Unknown option: $choice" ;;
@@ -2105,7 +2049,6 @@ show_menu() {
         install_fonts
         install_zsh_plugins
         install_mnemoria
-        install_pyenv
     fi
 
     # Only ask about packages and Oh My Zsh if not already selected
@@ -2131,13 +2074,6 @@ show_menu() {
         read -r install_zshplugins_choice
         if [[ "${install_zshplugins_choice,,}" == "y" ]]; then
             install_zsh_plugins
-        fi
-
-        echo ""
-        echo -e "  ${YELLOW}[y]${NC} Install pyenv (Python version manager)?"
-        read -r install_pyenv_choice
-        if [[ "${install_pyenv_choice,,}" == "y" ]]; then
-            install_pyenv
         fi
     fi
 }
@@ -2207,7 +2143,6 @@ main() {
         install_scripts
         install_fonts
         install_mnemoria
-        install_pyenv
 
     else
         # Show interactive menu
