@@ -93,12 +93,11 @@ plugins=(
   zsh-history-substring-search
   zsh-bash-completions-fallback
   zsh-autopair
-  zsh-auto-notify
+  auto-notify
   zsh-dircolors-solarized
   zsh-lazyload
-  git-davidde           # davidde/git (custom git plugin, distinct from built-in git)
 )
-
+export ZSH="$HOME/.oh-my-zsh"
 source $ZSH/oh-my-zsh.sh
 
 # ░█▀█░█▀▀░█▀▀░▀█▀░▀█▀░█▄█░█▀▄░█▀▀
